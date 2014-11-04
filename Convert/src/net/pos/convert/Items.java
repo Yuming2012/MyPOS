@@ -9,6 +9,15 @@ import java.sql.Statement;
 
 public class Items {
 
+	public static String appendSqlString(String s) {
+		if(s != null) {
+			s.replaceAll("\'", "\'\'");
+			s.replaceAll("\"", "\'\'");
+		}
+
+		return "," + ((s == null) ? "NULL" : ("\"" + s + "\""));
+	}
+	
 	public static void main(String[] args) {
 		Connection connSource = null;
 		Connection connTarget = null;
@@ -68,16 +77,10 @@ public class Items {
 					upc = sQuery;
 					
 					s = rsSource.getString(2);
-					if(s != null) {
-						s.replace("\"", ".");
-					}
-					sQuery = sQuery + "," + ((s == null) ? "NULL" : ("\"" + s + "\""));
+					sQuery = sQuery + appendSqlString(s);
 	
 					s = rsSource.getString(3);
-					if(s != null) {
-						s.replace("\"", ".");
-					}
-					sQuery = sQuery + "," + ((s == null) ? "NULL" : ("\"" + s + "\""));
+					sQuery = sQuery + appendSqlString(s);
 	
 					s = rsSource.getString(4);
 					sQuery = sQuery + "," + ((s == null) ? 0.0 : s);
@@ -86,28 +89,16 @@ public class Items {
 					sQuery = sQuery + "," + ((s == null) ? 0.0 : s);
 	
 					s = rsSource.getString(6);
-					if(s != null) {
-						s.replace("\"", ".");
-					}
-					sQuery = sQuery + "," + ((s == null) ? "NULL" : ("\"" + s + "\""));
+					sQuery = sQuery + appendSqlString(s);
 	
 					s = rsSource.getString(7);
-					if(s != null) {
-						s.replace("\"", ".");
-					}
-					sQuery = sQuery + "," + ((s == null) ? "NULL" : ("\"" + s + "\""));
+					sQuery = sQuery + appendSqlString(s);
 	
 					s = rsSource.getString(8);
-					if(s != null) {
-						s.replace("\"", ".");
-					}
-					sQuery = sQuery + "," + ((s == null) ? "NULL" : ("\"" + s + "\""));
+					sQuery = sQuery + appendSqlString(s);
 	
 					s = rsSource.getString(9);
-					if(s != null) {
-						s.replace("\"", ".");
-					}
-					sQuery = sQuery + "," + ((s == null) ? "NULL" : ("\"" + s + "\""));
+					sQuery = sQuery + appendSqlString(s);
 	
 					s = rsSource.getString(10);
 					sQuery = sQuery + "," + ((s == null) ? 1 : s);
