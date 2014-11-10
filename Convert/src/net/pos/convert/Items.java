@@ -9,26 +9,48 @@ import java.sql.Statement;
 
 public class Items {
 
-	public static String appendSqlString(String s) {
+	enum enDatabaseType {
+		MDB,
+		DBF
+	};
+	
+	// By default we set the type of database as DBF
+	private static enDatabaseType  dbType = enDatabaseType.DBF;
+	
+	private static String appendSqlString(String s) {
+		String rc;
 		if(s != null) {
-			s.replaceAll("\'", "\'\'");
-			s.replaceAll("\"", "\'\'");
+			if(s.contains("\"")) {
+				rc = "," + "\'" + s + "\'";
+			} else {
+				rc = "," + "\"" + s + "\"";
+			}
+		} else {
+			rc = "," + "NULL"; 
 		}
 
-		return "," + ((s == null) ? "NULL" : ("\"" + s + "\""));
+		return rc;
 	}
 	
 	public static void main(String[] args) {
 		Connection connSource = null;
 		Connection connTarget = null;
 
+		String dbPath = "C:\\Users\\User\\Yuming\\workspace\\MyPOS";
+		String database;
+		if(dbType == enDatabaseType.MDB) {
+			database = 
+                    "jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb)};DBQ=" + dbPath + "\\" + "POS.origin.mdb";
+		} else {
+			database = 
+					"jdbc:odbc:DRIVER={Microsoft dBase Driver (*.dbf)};DBQ=" + dbPath;
+		}
+		
 		// connect to the source
 		try
         {
-            System.out.println("Source: POS.origin.mdb");
+            System.out.println("Source: " + database);
             Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
-            String database = 
-                      "jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb)};DBQ=C:\\Users\\User\\Yuming\\workspace\\MyPOS\\POS.origin.mdb";
             connSource = DriverManager.getConnection(database, "", "");
         } catch(Exception ex) {
             ex.printStackTrace();
@@ -62,6 +84,10 @@ public class Items {
 		}
 
 
+		long targetRowsInserted = 0;
+		long targetRows = 0;
+		long sourceRows = 0;
+
 		if(rsSource != null) {
 			try {
 				while(rsSource.next()) {
@@ -72,7 +98,7 @@ public class Items {
 	                System.out.println(rsSource.getString(10));
 	                System.out.println(rsSource.getString(11));
 	*/
-					
+					sourceRows++;
 	    			String sQuery = "\"" + rsSource.getString(1) + "\"";
 					upc = sQuery;
 					
@@ -112,10 +138,13 @@ public class Items {
 	    			
 	    			try {
 	    				insertStmt.executeUpdate(sQuery);
+	    				targetRowsInserted++;
+	    				targetRows++;
 	    	  		} catch (SQLException e) {
 	    				if(e.toString().contains("is not unique")) {
 	//    					s = "UPDATE ITEMS SET UPC,UPCDES,UNIT,LIST,COST,DEPT,CATEGORY,SUBCAT,VENDOR,TAX1,TAX2) SET column1=value1,column2=value2,... WHERE UPC=" + upc;
 	    	    			System.out.println("UPC (" + upc + "): is not unique!");
+	    	    			targetRows++;
 	    				} else {
 	    					e.printStackTrace();
 	    			//		break;
@@ -126,7 +155,8 @@ public class Items {
 				e.printStackTrace();
             }
 		} // if
-		System.out.println("Finished!");
+		
+		System.out.println("Finished! Source: " + sourceRows + "; Target: " + targetRows + "; Target inserted: " + targetRowsInserted);
 	}
 
 }
